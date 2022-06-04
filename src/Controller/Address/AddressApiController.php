@@ -18,6 +18,11 @@ class AddressApiController extends AbstractController
     const HTTP_STATUS_BAD_REQUEST = 400;
 
     /**
+     * @const
+     */
+    const HTTP_STATUS_OK = 200;
+
+    /**
      * @var AddressService
      */
     private AddressService $addressService;
@@ -45,7 +50,11 @@ class AddressApiController extends AbstractController
         // Validate inputs (not the right place to do this...).
         // If JSON not valid or missing object key, return a 400 bad request.
         // Normally in an API context, should throw an exception that be caught and turned to JSON by error handler.
-        if($search === null || isset($search['adresse']) === false) {
+        if(
+            $search === null ||
+            isset($search['adresse']) === false ||
+            \is_string($search['adresse']) === false
+        ) {
             return new JsonResponse(
                 'Input validation error. Expect POST with BODY JSON {"adresse":"..."}.',
                 self::HTTP_STATUS_BAD_REQUEST
@@ -69,6 +78,6 @@ class AddressApiController extends AbstractController
         $serializedAddresses = $this->serializer->serialize($normalizedAddresses, 'json');
 
         // Create and return HTTP JSON response.
-        return new JsonResponse($serializedAddresses);
+        return new JsonResponse($serializedAddresses, self::HTTP_STATUS_OK, [], true);
     }
 }

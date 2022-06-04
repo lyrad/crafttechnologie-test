@@ -1,8 +1,43 @@
+## Commentaires
+# Spécifications
+L'endpoint "/api/adresse" accepte les requêtes POST ayant pour payload un object JSON défini tel que : '{ "adresse" : "<string>" }'.
+L'API recherche en base de donnée les adresses (rue + code postal + ville) contenant la sous-chaine "<string>".
+L'API retourne un tableau contenant les adresses trouvées, au format JSON défini tel que : '[ { "street" : "<string>", "postalCode": "<string>", "city": "<string>" }, ... ]'.
+L'API log en base de données chaque recherche effectuée. Paramètres d'un enregistrement de log : chaine recherchée, IP du client, date de la recherche.
+
+# Architecture
+Routage : fichier route.yaml symfony.
+Controleur :
+    - Filtrage et validation des entrées. Je doute que ce soit l'endroit approprié dans symfony pour effectuer cette action, mais n'ai pas le temps d'effectuer plus de recherches.
+    - Appel du service dédié avec les paramètres validés de la requête, et récuération des résultats.
+    - Présentation : Sérialisation des entités retournées (le format décrit dans les specs originel aurait nécessité le développement d'un normalizer maison. Par manque de temps je me suis contenté d'un sélection des attributs des entités retournées.'
+    - Retourne un object JSON contenant les entités sérialisées, ou une erreur si echec de validation des entrées.
+Service :
+    - Exécute le code "métier" de la recherche indépendamment de l'environnement HTTP (Controleur).
+    - Utilise la gestion de log interne, utilisant elle même Monolog pour enregistrer la recherche en base de données (Handler dédié AddressDoctrineLoggerHandler, configuration services.yaml/monolog.yaml).
+    - Utilise le repository de l'entité Adresse pour effectuée la recherche.
+Repositories / Entités
+    - Interface pour les requête sur les entités. Une insertion pour les logs, une sélection pour les addresses (passage par du DQL à cause du like et des CONCAT...).
+    - Sélection : Retourne un array plutot qu'une collection?! L'hydratation par défaut de doctrine doit être définie à array, je n'ai pas cherché à la modifier par manque de temps.
+Tests
+    - Je n'ai effectué que des tests d'application sur les entrées et retours de l'endpoint, et pas de tests unitaires sur les méthodes/classe.
+    - Manque les tests sur la feature d'enregistrement des logs
+# Notes
+Symfony :
+    - Assez semblable à laravel, mais j'ai quand même passé du temps, notamment sur l'intégration du logger...
+Injection de dépendance :
+    - Effectuée automatiquement par symfony, sauf pour l'intégration du logger monolog que je découvre et que je n'ai pas chercher à automatiser/optimiser...
+    - Normalement, les type hint permettant l'injection ne devraient être effectués que sur des interfaces et non directement sur des classes...
+
 ## Deploy Application.
-# Create database and schema.
+# Create database and schema, and seed it.
 php bin/console doctrine:database:create
 php bin/console make:migration
 php bin/console doctrine:migrations:migrate
-
-# Seed database.
 php bin/console doctrine:fixtures:load
+
+## Deploy test env.
+# Create test database and schema, and seed it.
+php bin/console --env=test doctrine:database:create
+php bin/console --env=test doctrine:migrations:migrate
+php bin/console --env=test doctrine:fixtures:load

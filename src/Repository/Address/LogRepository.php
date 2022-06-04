@@ -14,4 +14,16 @@ class LogRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Log::class);
     }
+
+    /**
+     * @param $log
+     * @return Log
+     */
+    public function persistLog(Log $log): Log
+    {
+        $this->getEntityManager()->persist($log);
+        $this->getEntityManager()->flush();
+
+        return $log;
+    }
 }
