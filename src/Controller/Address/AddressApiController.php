@@ -3,8 +3,8 @@ namespace App\Controller\Address;
 
 use App\Service\AddressService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
@@ -12,6 +12,11 @@ use Symfony\Component\Serializer\Serializer;
 
 class AddressApiController extends AbstractController
 {
+    /**
+     * @const int Should be available in some symfony core class but couldn't find...
+     */
+    const HTTP_STATUS_BAD_REQUEST = 400;
+
     /**
      * @var AddressService
      */
@@ -30,15 +35,28 @@ class AddressApiController extends AbstractController
 
     /**
      * @param Request $request
-     * @return Response
+     * @return JsonResponse
      */
-    public function searchAddress(Request $request): Response
+    public function searchAddress(Request $request): JsonResponse
     {
-        $search = \json_decode($request->getContent(), true)['adresse'];
+        // Decode JSON POST request body content.
+        $search = \json_decode($request->getContent(), true);
+
+        // Validate inputs (not the right place to do this...).
+        // If JSON not valid or missing object key, return a 400 bad request.
+        // Normally in an API context, should throw an exception that be caught and turned to JSON by error handler.
+        if($search === null || isset($search['adresse']) === false) {
+            return new JsonResponse(
+                'Input validation error. Expect POST with BODY JSON {"adresse":"..."}.',
+                self::HTTP_STATUS_BAD_REQUEST
+            );
+        }
+
         $clientIp = $request->getClientIp();
+        $addresses = $this->addressService->searchAddress($search['adresse'], $clientIp);
 
-        $addresses = $this->addressService->searchAddress($search, $clientIp);
-
+        // Normalize collection of addresses objects.
+        // Not totally conform to specs outputs, should create a dedicated normalizer for that...
         $normalizedAddresses = $this->serializer->normalize(
             $addresses,
             null,
@@ -47,11 +65,10 @@ class AddressApiController extends AbstractController
             ]
         );
 
+        // Serialize normalized collection of addresses objects to JSON.
         $serializedAddresses = $this->serializer->serialize($normalizedAddresses, 'json');
 
-        $response = new Response($serializedAddresses);
-        $response->headers->set('Content-Type', 'application/json');
-
-        return $response;
+        // Create and return HTTP JSON response.
+        return new JsonResponse($serializedAddresses);
     }
 }

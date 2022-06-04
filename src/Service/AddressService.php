@@ -26,7 +26,7 @@ class AddressService
     /**
      * @param string $search
      * @param string $ip
-     * @return array
+     * @return Address[]
      */
     public function searchAddress(string $search, string $ip): array
     {
