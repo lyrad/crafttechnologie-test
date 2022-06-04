@@ -35,6 +35,6 @@ class AddressService
             [ 'search' => $search, 'ip' => $ip ]
         );
 
-        return $this->addressRepository->getAddressByStreetChunk($search);
+        return $this->addressRepository->getAddressBySubString($search);
     }
 }

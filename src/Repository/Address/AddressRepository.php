@@ -17,10 +17,14 @@ class AddressRepository extends ServiceEntityRepository
 
     /**
      * @param string $streetChuck
-     * @return Address
+     * @return Address[]
      */
-    public function getAddressByStreetChunk(string $streetChuck): array
+    public function getAddressBySubString(string $search): array
     {
-        return $this->findAll();
+        $qb = $this->createQueryBuilder('a');
+        return $qb->where($qb->expr()->like('CONCAT(a.street, \' \', a.postalCode, \' \', a.city)', ':search'))
+            ->setParameter('search', '%' . $search . '%')
+            ->getQuery()
+            ->getResult();
     }
 }
