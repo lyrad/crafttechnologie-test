@@ -2,7 +2,8 @@
 namespace App\Service;
 
 use App\Repository\Address\AddressRepository;
-use Doctrine\Common\Collections\Collection;
+use App\Util\Address\AddressMonologDBHandler;
+use Psr\Log\LoggerInterface;
 
 class AddressService
 {
@@ -11,17 +12,29 @@ class AddressService
      */
     private AddressRepository $addressRepository;
 
-    public function __construct(AddressRepository $addressRepository)
+    /**
+     * @var LoggerInterface
+     */
+    private LoggerInterface $addressApiLogger;
+
+    public function __construct(AddressRepository $addressRepository, LoggerInterface $addressApiLogger)
     {
         $this->addressRepository = $addressRepository;
+        $this->addressApiLogger = $addressApiLogger;
     }
 
     /**
-     * @param string $chunk
-     * @return Collection
+     * @param string $search
+     * @param string $ip
+     * @return array
      */
-    public function getAddressByStreetChunk(string $chunk): array
+    public function searchAddress(string $search, string $ip): array
     {
-        return $this->addressRepository->getAddressByStreetChunk($chunk);
+        $this->addressApiLogger->info(
+            \sprintf('Search address triggered : "%s"', $search),
+            [ 'search' => $search, 'ip' => $ip ]
+        );
+
+        return $this->addressRepository->getAddressByStreetChunk($search);
     }
 }

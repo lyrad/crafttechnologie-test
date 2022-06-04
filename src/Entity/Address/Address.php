@@ -3,6 +3,7 @@ namespace App\Entity\Address;
 
 use App\Repository\Address\AddressRepository;
 use Doctrine\ORM\Mapping as ORM;
+
 /**
  * @ORM\Entity(repositoryClass=AddressRepository::class)
  */

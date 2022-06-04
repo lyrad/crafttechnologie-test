@@ -32,10 +32,12 @@ class AddressApiController extends AbstractController
      * @param Request $request
      * @return Response
      */
-    public function getAddressByStreetChunk(Request $request): Response
+    public function searchAddress(Request $request): Response
     {
-        $address = \json_decode($request->getContent(), true)['adresse'];
-        $addresses = $this->addressService->getAddressByStreetChunk($address);
+        $search = \json_decode($request->getContent(), true)['adresse'];
+        $clientIp = $request->getClientIp();
+
+        $addresses = $this->addressService->searchAddress($search, $clientIp);
 
         $normalizedAddresses = $this->serializer->normalize(
             $addresses,

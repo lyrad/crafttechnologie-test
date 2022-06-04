@@ -1,12 +1,7 @@
 #index:
 #    path: /
 #    controller: App\Controller\DefaultController::index
-api_adresse:
+api_address_search:
   path: /api/adresse
-  controller: App\Controller\Address\AddressApiController::getAddressByStreetChunk
+  controller: App\Controller\Address\AddressApiController::searchAddress
   methods: POST
-
-api_adresse_get:
-  path: /api/adresseget
-  controller: App\Controller\Address\AddressApiController::getAddressByStreetChunk
-  methods: GET
