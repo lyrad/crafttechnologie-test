@@ -47,7 +47,7 @@ class AddressApiController extends AbstractController
         // Decode JSON POST request body content.
         $search = \json_decode($request->getContent(), true);
 
-        // Un commentaire
+        // Un commentaire.
 
         // Validate inputs (not the right place to do this...).
         // If JSON not valid or missing object key, return a 400 bad request.
